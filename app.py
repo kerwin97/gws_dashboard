@@ -17,13 +17,14 @@ def draw_graph(df, spinner_name, y_col, title):
         fig_temp = px.line(df, x='DateTimeColumn', y=y_col,
                            color='Sensor ID', title=title)
 
-    st.plotly_chart(fig_temp)
+    # Make the chart responsive
+    st.plotly_chart(fig_temp, use_container_width=True)
 
 
 @st.cache_data
 def overall_view(df):
-    st.title("Tab 1 Content")
-    st.write("This is the content of Tab 1.")
+    st.title("Overview")
+    st.write("An Overview of Time Series")
 
     # Convert the datetime column to datetime format if needed
     with st.spinner("Cleaning Data..."):
@@ -42,8 +43,8 @@ def overall_view(df):
 
 
 def select_by_sensorID(df):
-    st.title("Tab 2 Content")
-    st.write("This is the content of Tab 2.")
+    st.title("Select by Sensor ID")
+    st.write("Select a Sensor ID to look into the details")
 
     # Dropdown menu to select a category
     selected_category = st.selectbox(
@@ -72,15 +73,17 @@ def select_by_sensorID(df):
 
 
 def filter_by_plant_type(df):
-    st.title("Tab 3 Content")
-    st.write("This is the content of Tab 3.")
+    st.title("Multi Select Plant Type")
+    st.write("Multi Select the Plant Types")
+    # First column, first row
+    col1, col2 = st.columns([1, 1])
 
     # Dropdown menu to select multiple categories
-    selected_categories_1 = st.multiselect(
+    selected_categories_1 = col1.multiselect(
         "Select Plant 1 Type", df['Plant 1 Type'].unique())
 
     # Dropdown menu to select multiple categories
-    selected_categories_2 = st.multiselect(
+    selected_categories_2 = col2.multiselect(
         "Select Plant 2 Type", df['Plant 2 Type'].unique())
 
     # Filter the DataFrame based on the selected categories
@@ -109,8 +112,8 @@ def filter_by_plant_type(df):
 
 
 def main():
-    st.title("My Streamlit App")
-    st.write("Welcome to my Streamlit app!")
+    st.title("GWS Dashboard")
+    st.write("Monitor Soil Conditions")
 
     data_file = "data/soilSensorData.csv"
     df = load_data(data_file)
@@ -118,9 +121,15 @@ def main():
     # Remove unnamed columns
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
 
+    df["Temperature"] = pd.to_numeric(df["Temperature"], errors='coerce')
+    df["Moisture Point (%)"] = pd.to_numeric(
+        df["Moisture Point (%)"], errors='coerce')
+    df["Brightness (%)"] = pd.to_numeric(df["Brightness (%)"], errors='coerce')
+
     # Display the DataFrame
     st.write("### DataFrame:")
     st.write(df)
+    st.write(df.describe())
 
     # Create a sidebar with tab options
     selected_tab = st.sidebar.selectbox(
